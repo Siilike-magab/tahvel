@@ -704,7 +704,7 @@ function svgCompass(o){
    <line x1="${f(g.H.x)}" y1="${f(g.H.y)}" x2="${f(g.P.x)}" y2="${f(g.P.y)}" stroke="#7D8AA6" stroke-width="9" stroke-linecap="round" data-h="move"/>
    <line x1="${f(g.H.x)}" y1="${f(g.H.y)}" x2="${f(g.K.x)}" y2="${f(g.K.y)}" stroke="#5B6987" stroke-width="6" stroke-linecap="round" pointer-events="none"/>
    <circle class="inst-pt" cx="${f(o.x)}" cy="${f(o.y)}" r="9" data-h="move"><title>Neel: lohistage, et kompassi teisaldada</title></circle>
-   <circle class="inst-pencil" cx="" cy="" r="10" data-h="radius"><title>Pliiats: lohistage, et raadiust muuta</title></circle>
+   <circle class="inst-pencil" cx="${f(g.P.x)}" cy="${f(g.P.y)}" r="10" data-h="radius"><title>Pliiats: lohistage, et raadiust muuta</title></circle>
    <g class="inst-knob draw" data-h="draw" transform="translate(${f(g.K.x)} ${f(g.K.y)})"><circle r="17"/><path d="M-7 2a7 7 0 1 0 3-8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M-4-9l1 4 4-1" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><title>Keerake kätt — kompass joonistab</title></g>
    <g class="inst-label" transform="translate(${f(g.H.x+24)} ${f(g.H.y)})"><rect x="0" y="-15" width="${f(78+String(o.rcm).length*2)}" height="30" rx="8"/><text x="10" y="5">r = ${String(+(o.rcm||3).toFixed(1)).replace('.',',')} cm</text></g>
    <g class="inst-chipbtn" data-h="circle" transform="translate(${f(g.H.x+24)} ${f(g.H.y+22)})"><rect x="0" y="0" width="78" height="28" rx="8"/><text x="11" y="19">Ring</text></g>
