@@ -10,6 +10,7 @@ function showTab(name){
   ['board','column','tools'].forEach(n=>$('#p-'+n).hidden=n!==name);
   store.set('tab',name);
   if(name==='board') requestAnimationFrame(()=>{fitBoard();resizeBoard()});
+  if(name==='column') requestAnimationFrame(()=>{const f=firstInput();f&&f.focus()});
 }
 $$('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
 
@@ -1024,7 +1025,7 @@ function buildDiv(N,d){
   L.q=q; L.rem=rem; return L;
 }
 
-function setProblem(a,b,focus){
+function setProblem(a,b){
   C.a=a;C.b=b;C.solved=false;
   const L=C.op==='div'?buildDiv(a,b):C.op==='mul'?buildMul(a,b):buildAS(a,b,C.op);
   C.lay=L; renderLay(L);
@@ -1036,7 +1037,7 @@ function setProblem(a,b,focus){
     : C.op==='sub' ? 'Ülemine rida on koht, kus "laenad" kümneid (ei kontrollita). Kirjuta vastus paremalt vasakule.'
     : 'Ülemine rida on koht, kus hoiad numbreid peas (ei kontrollita). Kirjuta vastus paremalt vasakule.';
   $('#fb').textContent=''; $('#fb').className='feedback';
-  if(focus){const f=firstInput();f&&f.focus()}
+  const f=firstInput();f&&f.focus();
 }
 function renderLay(L){
   const nb=$('#nb'); nb.innerHTML=''; nb.style.gridTemplateColumns=`repeat(${L.cols},var(--cell))`;
@@ -1062,6 +1063,10 @@ function renderLay(L){
 const inputsAll=()=>$$('#nb input');
 function firstInput(){
   const ins=inputsAll().filter(i=>i.dataset.exp);
+  if(C.op==='div'){
+    const quotientStart=C.lay.vline.c;
+    return ins.find(i=>+i.dataset.r===1&&+i.dataset.c===quotientStart);
+  }
   if(C.lay.dir==='right') return ins[0];
   const maxR=Math.min(...ins.map(i=>+i.dataset.r)); const row=ins.filter(i=>+i.dataset.r===maxR);
   return row.at(-1);
@@ -1149,7 +1154,7 @@ function doCheck(){
   }
 }
 $('#checkB').onclick=doCheck;
-$('#newB').onclick=()=>{const[a,b]=gen();setProblem(a,b,true)};
+$('#newB').onclick=()=>{const[a,b]=gen();setProblem(a,b)};
 $('#wipeB').onclick=()=>{inputsAll().forEach(i=>{i.value='';i.classList.remove('ok','err','shown')});$('#fb').textContent=''};
 $('#showB').onclick=()=>{inputsAll().forEach(i=>{if(i.dataset.exp&&i.value!==i.dataset.exp){i.value=i.dataset.exp;i.classList.remove('ok','err');i.classList.add('shown')}});C.solved=true;$('#fb').textContent='Siin on õige lahendus. Proovi ise uuesti uut ülesannet.';$('#fb').className='feedback'};
 $('#liveC').onchange=e=>{C.live=e.target.checked;inputsAll().forEach(i=>C.live?markOne(i):i.classList.remove('ok','err'))};
@@ -1172,7 +1177,7 @@ $('#ownBtn').onclick=()=>{
   if(C.op==='div'&&b===0) return err('Nulliga jagada ei saa.');
   if(C.op==='div'&&a<b) return err('Jagatav peab olema suurem või võrdne jagajaga.');
   if(C.op==='mul'&&String(b).length>3) return err('Teine tegur võib olla kuni 3 kohta.');
-  ea.hidden=true; setProblem(a,b,true);
+  ea.hidden=true; setProblem(a,b);
 };
 $('#starN').textContent=C.stars;
 syncColUI(); setProblem(...(C.op==='div'?[756,4]:gen()));
