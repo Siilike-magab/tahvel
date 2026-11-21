@@ -1347,8 +1347,7 @@ function timeWords(tm){
   else if(M===30)s=`pool ${HOUR_NOM[nx]}`;
   else if(M===15)s=`veerand ${HOUR_NOM[nx]}`;
   else if(M===45)s=`kolmveerand ${HOUR_NOM[nx]}`;
-  else if(M<30)s=`${minW(M)} üle ${HOUR_GEN[H]}`;
-  else s=`${minW(60-M)} enne ${HOUR_PART[nx]}`;
+  else s=`${HOUR_NOM[H]} läbi ${minW(M)}`;
   return s[0].toUpperCase()+s.slice(1);
 }
 const digT=tm=>`${Math.floor(tm/60)||12}:${String(tm%60).padStart(2,'0')}`;
