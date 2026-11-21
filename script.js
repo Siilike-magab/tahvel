@@ -241,7 +241,7 @@ function fitBoard(){
   if(cwrap.style.height!==h+'px')cwrap.style.height=h+'px';
 }
 window.addEventListener('resize',()=>requestAnimationFrame(fitBoard));
-function closePops(){['#addPop','#fontPop','#instPop','#langPop'].forEach(x=>{const el=$(x);if(el)el.hidden=true});$('#addMenuB').setAttribute('aria-expanded','false');const f=$('#fontPickB');if(f)f.setAttribute('aria-expanded','false')}
+function closePops(){['#addPop','#fontPop','#instPop'].forEach(x=>{const el=$(x);if(el)el.hidden=true});$('#addMenuB').setAttribute('aria-expanded','false');const f=$('#fontPickB');if(f)f.setAttribute('aria-expanded','false')}
 $('#fontPickB').onclick=e=>{e.stopPropagation();const open=$('#fontPop').hidden;closePops();$('#fontPop').hidden=!open;$('#fontPickB').setAttribute('aria-expanded',open)};
 function setTb(mode){
   stage.dataset.tb=mode;store.set('tb',mode);
@@ -268,8 +268,6 @@ function syncBoardUI(){
   pressGroup($$('[data-tool]'),el=>el.dataset.tool===B.tool);
   pressGroup($$('[data-color]'),el=>el.dataset.color===B.color);
   pressGroup($$('[data-pf]'),el=>el.dataset.pf===B.font);
-  pressGroup($$('[data-morph]'),el=>B.tool==='morph'&&el.dataset.morph===B.morph);
-  $('#langMenuB').classList.toggle('hot',B.tool==='morph');
   const fpn=$('#fontPickB .fp-name');if(fpn){fpn.textContent=FONT_LABEL[B.font]||'Kirjutis';fpn.style.fontFamily=FONTS[B.font]}
   $('#sizeR').value=B.size; $('#widthR').value=B.width; $('#lineR').value=B.lineK;
   drC.style.cursor=CURSORS[B.tool]||'crosshair';
@@ -936,10 +934,6 @@ function fillMorph(o,body,el){
   if(document.fonts)document.fonts.ready.then(paint);
 }
 
-/* меню «Мова» */
-$('#langMenuB').onclick=e=>{e.stopPropagation();const open=$('#langPop').hidden;closePops();$('#langPop').hidden=!open;$('#langMenuB').setAttribute('aria-expanded',open)};
-$$('[data-morph]').forEach(b=>b.onclick=()=>{commitEditor();B.tool='morph';B.morph=b.dataset.morph;sel=null;closePops();syncBoardUI();redraw()});
-$('#morphCardB').onclick=()=>{closePops();addObj({type:'morph',word:'lumikelluke',font:'print',marks:[{k:'pref',from:0,to:2},{k:'root',from:3,to:6},{k:'suf',from:7,to:9},{k:'zero',from:9,to:9},{k:'base',from:0,to:9}],w:Math.min(640,cw*.7),h:340})};
 function toastAction(msg,label,fn){
   const el=$('#bToast');el.innerHTML='';const sp=document.createElement('span');sp.textContent=msg;el.appendChild(sp);
   const b=document.createElement('button');b.className='toast-btn';b.textContent=label;b.onclick=()=>{fn();el.hidden=true};el.appendChild(b);
@@ -1341,15 +1335,20 @@ function buildHouse(){
 $('#houseB').onclick=buildHouse;buildHouse();
 
 /* Clock */
-const NOM=['kaksteist','üks','kaks','kolm','neli','viis','kuus','seitse','kaheksa','üheksa','kümme','üheteistkümme','kaksteist'];
-const ACC=['kaksteistkuut','üht','kaks','kolm','neli','viit','kuut','seitsmet','kaheksat','üheksat','kümmet','üheteistkümmet','kaksteistkuut'];
+const HOUR_NOM=['','üks','kaks','kolm','neli','viis','kuus','seitse','kaheksa','üheksa','kümme','üksteist','kaksteist'];
+const HOUR_GEN=['','ühe','kahe','kolme','nelja','viie','kuue','seitsme','kaheksa','üheksa','kümne','üheteistkümne','kaheteistkümne'];
+const HOUR_PART=['','ühte','kahte','kolme','nelja','viit','kuut','seitset','kaheksat','üheksat','kümmet','üheteistkümmet','kahtteist'];
 const MW={5:'viis minutit',10:'kümme minutit',20:'kakskümmend minutit',25:'kakskümmend viis minutit'};
-const plur=n=>{const a=n%10,b=n%100;return a===1&&b!==11?'minut':a>=2&&a<=4&&(b<12||b>14)?'minutit':'minutit'};
+const plur=n=>n===1?'minut':'minutit';
 const minW=n=>MW[n]||`${n} ${plur(n)}`;
 function timeWords(tm){
   const H=Math.floor(tm/60)||12,M=tm%60,nx=H%12+1;let s;
-  if(M===0)s=`${NOM[H]} koht`;else if(M===30)s=`pool ${ACC[nx]}`;else if(M===15)s=`veerand ${ACC[nx]}`;
-  else if(M===45)s=`veerand läbi ${NOM[nx]}`;else if(M<30)s=`${minW(M)} ${ACC[nx]}`;else s=`${minW(60-M)} ${NOM[nx]}`;
+  if(M===0)s=`Kell on ${HOUR_NOM[H]}`;
+  else if(M===30)s=`pool ${HOUR_NOM[nx]}`;
+  else if(M===15)s=`veerand ${HOUR_NOM[nx]}`;
+  else if(M===45)s=`kolmveerand ${HOUR_NOM[nx]}`;
+  else if(M<30)s=`${minW(M)} üle ${HOUR_GEN[H]}`;
+  else s=`${minW(60-M)} enne ${HOUR_PART[nx]}`;
   return s[0].toUpperCase()+s.slice(1);
 }
 const digT=tm=>`${Math.floor(tm/60)||12}:${String(tm%60).padStart(2,'0')}`;
@@ -1387,8 +1386,8 @@ $('#ckNow').onclick=()=>{const d=new Date();setT((d.getHours()%12)*60+d.getMinut
 function newTask(){
   const st=K.step,slots=720/st;K.target=rnd(0,slots-1)*st;
   $('#ckFb').textContent='';$('#ckFb').className='feedback';
-  if(K.mode==='read'){K.tm=K.target;$('#ckH').value='';$('#ckM').value='';$('#ckQ').textContent='Millist kellaaega kell näitab?'}
-  else{K.tm=0;$('#ckQ').textContent=`Sea: ${digT(K.target)} — ${timeWords(K.target).toLowerCase()}`}
+  if(K.mode==='read'){K.tm=K.target;$('#ckH').value='';$('#ckM').value='';$('#ckQ').textContent='Mis kell on?'}
+  else{K.tm=0;$('#ckQ').textContent=`Sea osutid: ${digT(K.target)} — ${timeWords(K.target).toLowerCase()}`}
   drawClock();
 }
 function syncClockUI(){
@@ -1406,8 +1405,8 @@ $('#ckCheck').onclick=()=>{
   if(K.mode==='read'){const h=parseInt($('#ckH').value),m=parseInt($('#ckM').value||'0');
     if(isNaN(h)){fb.textContent='Sisesta tunnid ja minutid.';fb.className='feedback err';return}
     ok=((h%12)*60+m)%720===K.target;
-    fb.textContent=ok?`Õige! ${digT(K.target)} — ${timeWords(K.target).toLowerCase()}.`:'Vaata uuesti: lühike nool näitab tunde, pikk nool minuteid.';}
-  else{ok=K.tm===K.target;fb.textContent=ok?'Õige! Nooled on täpselt õigesti.' :`Praegu näitavad nooled ${digT(K.tm)}. Proovi uuesti.`}
+    fb.textContent=ok?`Õige! ${digT(K.target)} — ${timeWords(K.target).toLowerCase()}.`:'Proovi uuesti. Lühike osuti näitab tunde, pikk osuti minuteid.';}
+  else{ok=K.tm===K.target;fb.textContent=ok?'Õige! Osutid näitavad täpselt õiget aega.' :`Praegu näitavad osutid ${digT(K.tm)}. Proovi uuesti.`}
   fb.className='feedback '+(ok?'ok':'err');
 };
 $('#ckDigC').onchange=drawClock;$('#ckWrdC').onchange=drawClock;
